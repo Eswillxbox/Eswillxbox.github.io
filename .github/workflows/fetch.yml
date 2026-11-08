@@ -1,3 +1,5 @@
+permissions:
+  contents: write
 name: Fetch Posts
 on:
   schedule:
@@ -18,9 +20,10 @@ jobs:
         env:
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-      - run: |
-          git config user.name "bot"
-          git config user.email "bot@users.noreply.github.com"
+      - name: 提交更新 posts.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/posts.json
-          git diff --cached --quiet || git commit -m "update posts"
+          git commit -m "auto: sync new discord posts" || echo "无新消息无需提交"
           git push
