@@ -1,43 +1,54 @@
-const fs = require("fs");
+const fs = require('fs');
+const path = require('path');
 
-async function main() {
-  const channelId = process.env.CHANNEL_ID;
-  const discordToken = process.env.DISCORD_TOKEN;
+// 从环境变量读取Discord配置
+const CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;
+const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
-  if (!channelId || !discordToken) {
-    console.error("环境变量 CHANNEL_ID 或 DISCORD_TOKEN 缺失");
+async function fetchDiscordMessages() {
+  try {
+    // 请求Discord API拉取频道消息
+    const res = await fetch(`https://discord.com/api/v10/channels/${CHANNEL_ID}/messages?limit=100`, {
+      headers: { Authorization: `Bot ${BOT_TOKEN}` }
+    });
+
+    if (!res.ok) throw new Error(`API请求失败: ${res.status}`);
+    const data = await res.json();
+
+    // 处理消息，兜底空内容+自动拼接图片
+    const posts = Array.isArray(data)
+      ? data.map(m => {
+          let fullContent = m.content || "";
+          // 自动把图片附件转成Markdown格式
+          if (Array.isArray(m.attachments) && m.attachments.length > 0) {
+            m.attachments.forEach(att => {
+              if (att.width && att.height) {
+                fullContent += `\n![${att.name || '图片'}](${att.url})\n`;
+              }
+            });
+          }
+          // 兜底纯Embed无文字的消息
+          if (!fullContent && Array.isArray(m.embeds) && m.embeds.length > 0) {
+            fullContent = m.embeds.map(e => e.description || e.title || '').join('\n');
+          }
+          // 返回完整结构化数据
+          return {
+            id: m.id,
+            author: m.author?.username ?? "匿名用户",
+            timestamp: m.timestamp,
+            content: fullContent
+          };
+        })
+      : [];
+
+    // 写入到docs目录下的posts.json
+    const outputPath = path.join(process.cwd(), 'docs', 'posts.json');
+    fs.writeFileSync(outputPath, JSON.stringify(posts, null, 2), 'utf8');
+    console.log(`✅ 同步完成，共写入 ${posts.length} 条消息`);
+  } catch (err) {
+    console.error('❌ 同步失败:', err);
     process.exit(1);
   }
-
-  const url = `https://discord.com/api/v10/channels/${channelId}/messages?limit=30`;
-  const res = await fetch(url, {
-    headers: { Authorization: `Bot ${discordToken}` }
-  });
-
-  // 接口返回非200时打印信息，直接写空数组
-  if (!res.ok) {
-    console.error(`接口请求失败，状态码：${res.status}`);
-    fs.writeFileSync("docs/posts.json", JSON.stringify([], null, 2));
-    return;
-  }
-
-  const data = await res.json();
-
-  // 兜底判断：确认拿到的是数组才处理map
-  const posts = Array.isArray(data)
-    ? data.map(m => ({
-        id: m.id,
-        author: m.author?.username ?? "匿名",
-        timestamp: m.timestamp,
-        content: m.content || ""
-      }))
-    : [];
-
-  fs.writeFileSync("docs/posts.json", JSON.stringify(posts, null, 2));
-  console.log(`成功同步 ${posts.length} 条消息`);
 }
 
-main().catch(e => {
-  console.error("脚本运行出错：", e);
-  process.exit(1);
-});
+fetchDiscordMessages();
