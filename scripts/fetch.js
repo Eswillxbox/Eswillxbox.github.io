@@ -1,8 +1,8 @@
 const fs = require("fs");
 
 async function main() {
-  const channelId = secrets.CHANNEL_ID;
-  const discordToken = secrets.DISCORD_TOKEN;
+  const channelId = process.env.CHANNEL_ID;
+  const discordToken = process.env.DISCORD_TOKEN;
 
   if (!channelId || !discordToken) {
     console.error("环境变量 CHANNEL_ID 或 DISCORD_TOKEN 缺失");
