@@ -1,37 +1,199 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="Eswillxbox.github.io/favicon.png">
-  <title>我的Discord笔记博客</title>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,system-ui,sans-serif;}
-    body{background:#f5f7fa;color:#2c3e50;max-width:820px;margin:0 auto;padding:3rem 1.5rem;}
-    h1{font-size:2.2rem;text-align:center;margin-bottom:3.5rem;color:#1a2533;}
-    article{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.06);padding:2.4rem;margin-bottom:2.8rem;}
-    article p{margin-bottom:1.2rem;line-height:1.75;font-size:1.05rem;}
-    article h1,article h2,article h3{margin:1.8rem 0 1rem;color:#1a2533;}
-    article img{max-width:100%;border-radius:8px;margin:1.2rem 0;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✦ Discord 风格博客</title>
+<link rel="icon" href="favicon.png">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #36393F;          /* 聊天区背景 */
+    --bg-side: #202225;     /* 服务器栏背景 */
+    --bg-header: #2F3136;   /* 频道栏背景 */
+    --msg: #40444B;         /* 消息气泡 */
+    --msg-hover: #42464D;
+    --text: #DCDDDE;
+    --muted: #8E9297;
+    --blurple: #5865F2;
+    --green: #3BA55D;
+    --red: #ED4245;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: "Helvetica Neue", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+  }
+
+  /* ---- 左侧服务器栏 ---- */
+  .server-bar {
+    width: 72px;
+    background: var(--bg-side);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .server-bar .logo {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--blurple);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: #fff;
+    cursor: pointer; transition: border-radius .2s, background .2s;
+  }
+  .server-bar .logo:hover { border-radius: 30%; background: var(--green); }
+  .server-bar .divider { width: 32px; height: 2px; background: #35383C; border-radius: 1px; }
+  .server-bar .pill {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #2F3136;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--muted); cursor: pointer;
+    transition: border-radius .2s, background .2s, color .2s;
+  }
+  .server-bar .pill:hover { border-radius: 30%; background: var(--blurple); color: #fff; }
+
+  /* ---- 主区域 ---- */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; height: 100vh; }
+
+  .channel-header {
+    height: 48px;
+    background: var(--bg-header);
+    border-bottom: 1px solid #292B2F;
+    box-shadow: 0 1px 0 rgba(0,0,0,.2);
+    display: flex; align-items: center;
+    padding: 0 16px; gap: 8px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .channel-header .hash { color: var(--muted); font-weight: 400; font-size: 20px; }
+  .channel-header .title { color: #fff; }
+  .channel-header .desc {
+    font-size: 13px; color: var(--muted); font-weight: 400;
+    margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ---- 消息区 ---- */
+  .posts {
+    flex: 1; overflow-y: auto;
+    width: 100%; max-width: 860px;
+    margin: 0 auto; padding: 24px 16px 80px;
+  }
+  .posts::-webkit-scrollbar { width: 8px; }
+  .posts::-webkit-scrollbar-thumb { background: #202225; border-radius: 4px; }
+  .posts::-webkit-scrollbar-track { background: transparent; }
+
+  article {
+    background: var(--msg);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    animation: fadeUp .3s ease;
+  }
+  article:hover { background: var(--msg-hover); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .message-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #5865F2, #3BA55D);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #fff; flex-shrink: 0;
+  }
+  .author { font-weight: 600; color: #fff; font-size: 15px; }
+  .time { font-size: 12px; color: var(--muted); }
+
+  .content { font-size: 15px; line-height: 1.6; word-break: break-word; }
+  .content h1, .content h2, .content h3 { margin: 12px 0 8px; color: #fff; }
+  .content h1 { font-size: 22px; } .content h2 { font-size: 19px; } .content h3 { font-size: 16px; }
+  .content p { margin: 0 0 10px; }
+  .content a { color: #00AFF4; text-decoration: none; }
+  .content a:hover { text-decoration: underline; }
+  .content code {
+    background: #2F3136; padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, Monaco, monospace; font-size: 13px; color: #EBB6FF;
+  }
+  .content pre {
+    background: #2F3136; padding: 12px; border-radius: 6px;
+    overflow-x: auto; margin: 10px 0;
+  }
+  .content pre code { background: none; padding: 0; color: #DCDDDE; }
+  .content img { max-width: 100%; border-radius: 6px; }
+  .content blockquote { border-left: 4px solid var(--blurple); margin: 8px 0; padding: 2px 12px; color: var(--muted); }
+  .content ul, .content ol { margin: 0 0 10px 22px; }
+  .content table { border-collapse: collapse; margin: 10px 0; }
+  .content th, .content td { border: 1px solid #55595F; padding: 6px 10px; }
+  .content th { background: #2F3136; color: #fff; }
+
+  .status { text-align: center; color: var(--muted); margin-top: 3rem; }
+
+  /* ---- 响应式 ---- */
+  @media (max-width: 640px) {
+    .server-bar { width: 56px; }
+    .server-bar .logo, .server-bar .pill { width: 40px; height: 40px; font-size: 16px; }
+    .posts { padding: 16px 10px 60px; }
+    .channel-header .desc { display: none; }
+  }
+</style>
 </head>
 <body>
-  <h1>我的Discord笔记博客</h1>
-  <div id="posts"></div>
+
+  <aside class="server-bar">
+    <div class="logo">📝</div>
+    <div class="divider"></div>
+    <div class="pill">🗂️</div>
+    <div class="pill">🔔</div>
+  </aside>
+
+  <main class="main">
+    <header class="channel-header">
+      <span class="hash">✦</span>
+      <span class="title">博客文章</span>
+      <span class="desc">— 由 posts.json 自动渲染</span>
+    </header>
+
+    <div id="posts" class="posts">
+      <p class="status">加载中...</p>
+    </div>
+  </main>
+
   <script>
+    // —— 你提供的加载逻辑（保留核心，稍作结构增强）——
     async function loadPosts() {
       const container = document.getElementById("posts");
       try {
-        // 适配所有Pages部署场景，优先读同目录posts.json
+        // 适配所有 Pages 部署场景，优先读同目录 posts.json
         const res = await fetch("./posts.json");
         if (!res.ok) throw new Error(`JSON加载失败${res.status}`);
         const posts = await res.json();
         // 最新消息排在最前面
         posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        if (!posts.length) {
+          container.innerHTML = `<p class="status">还没有文章。</p>`;
+          return;
+        }
         posts.forEach(p => {
           const el = document.createElement("article");
-          el.innerHTML = marked.parse(p.content || "暂无内容");
+          const time = p.timestamp
+            ? new Date(p.timestamp).toLocaleString("zh-CN", {
+                year: "numeric", month: "2-digit", day: "2-digit",
+                hour: "2-digit", minute: "2-digit"
+              })
+            : "";
+          const author = (p.author || "System").replace(/</g, "&lt;");
+          const avatar = p.avatar || "🤖";
+          el.innerHTML = `
+            <div class="message-header">
+              <span class="avatar">${avatar}</span>
+              <span class="author">${author}</span>
+              ${time ? `<span class="time">${time}</span>` : ""}
+            </div>
+            <div class="content">${marked.parse(p.content || "暂无内容")}</div>
+          `;
           container.appendChild(el);
         });
       } catch (e) {
