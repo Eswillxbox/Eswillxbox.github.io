@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 // 从环境变量读取Discord配置
-const CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+const CHANNEL_ID = process.env.CHANNEL_ID;
+const BOT_TOKEN = process.env.DISCORD_TOKEN;
 
 async function fetchDiscordMessages() {
   try {
