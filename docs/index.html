@@ -3,41 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>你的Discord博客</title>
-  <!-- 引入Markdown渲染依赖 -->
+  <title>我的Discord笔记博客</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    /* 基础排版样式，适配手机/电脑 */
-    body { max-width: 750px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
-    article { margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid #eee; }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,system-ui,sans-serif;}
+    body{background:#f5f7fa;color:#2c3e50;max-width:820px;margin:0 auto;padding:3rem 1.5rem;}
+    h1{font-size:2.2rem;text-align:center;margin-bottom:3.5rem;color:#1a2533;}
+    article{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.06);padding:2.4rem;margin-bottom:2.8rem;}
+    article p{margin-bottom:1.2rem;line-height:1.75;font-size:1.05rem;}
+    article h1,article h2,article h3{margin:1.8rem 0 1rem;color:#1a2533;}
+    article img{max-width:100%;border-radius:8px;margin:1.2rem 0;}
   </style>
 </head>
 <body>
   <h1>我的Discord笔记博客</h1>
-  <!-- 文章渲染容器 -->
   <div id="posts"></div>
-
   <script>
-    // 加载并渲染Discord同步过来的文章
-    fetch("./posts.json")
-      .then(res => res.json())
-      .then(posts => {
-        const postContainer = document.getElementById("posts");
-        // 按消息ID倒序：最新发的内容排在最前面
-        posts.sort((a, b) => b.id - a.id);
-        
-        posts.forEach(post => {
-          const article = document.createElement("article");
-          // 把Discord的Markdown内容转成网页格式
-          article.innerHTML = marked.parse(post.content);
-          postContainer.appendChild(article);
+    async function loadPosts() {
+      const container = document.getElementById("posts");
+      try {
+        // 适配所有Pages部署场景，优先读同目录posts.json
+        const res = await fetch("./posts.json");
+        if (!res.ok) throw new Error(`JSON加载失败${res.status}`);
+        const posts = await res.json();
+        // 最新消息排在最前面
+        posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        posts.forEach(p => {
+          const el = document.createElement("article");
+          el.innerHTML = marked.parse(p.content || "暂无内容");
+          container.appendChild(el);
         });
-      })
-      .catch(err => {
-        // 路径错误时显示提示，方便排查
-        document.getElementById("posts").innerText = "读取文章失败，请确认posts.json和本文件在同一目录";
-        console.error(err);
-      })
+      } catch (e) {
+        container.innerHTML = `<p style="text-align:center;color:#e74c3c;margin-top:3rem;">加载失败：${e.message}</p>`;
+      }
+    }
+    loadPosts();
   </script>
 </body>
 </html>
